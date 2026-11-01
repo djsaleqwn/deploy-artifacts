@@ -22,9 +22,11 @@ Git 仓库不适合存放几十上百 MB 的二进制文件（单文件 100 MiB 
 | `docker-el9-v1` | Docker 引擎离线包（自足 RPM 集，含系统依赖） | RHEL 9 系（CentOS Stream 9 / Rocky 9 / AlmaLinux 9），x86_64 |
 | `docker-ubuntu-2204-v1` | Docker 引擎离线包（自足 deb 集，含系统依赖） | Ubuntu 22.04 LTS，x86_64 |
 | `compose-v5.1.3` | Docker Compose 独立静态二进制 | linux x86_64 |
-| `images-el7-v1` | 常用容器镜像 tar（预留给无外网机器） | linux x86_64 |
+| `images-el7-v1` | 常用容器镜像 tar（mysql / nginx / openresty / temurin-8-jre / coturn / redis，每个镜像单独一个文件） | linux amd64（与发行版无关） |
 
 每个 Release 的说明里写明用途、sha256 与使用方式。
+
+说明：`images-*` 里的 tar 是 `docker save` 产物，与宿主发行版无关，任何 amd64 Linux 上的 Docker 都可 `docker load -i <文件名>`；文件名是固定契约（安装脚本按名字找文件），不要改名。
 
 ## 下载
 
