@@ -19,6 +19,8 @@ Git 仓库不适合存放几十上百 MB 的二进制文件（单文件 100 MiB 
 | Tag | 内容 | 适用平台 |
 |---|---|---|
 | `docker-el7-v2` | Docker 引擎离线包（自足 RPM 集，含系统依赖） | CentOS 7 / RHEL 7，x86_64 |
+| `docker-el9-v1` | Docker 引擎离线包（自足 RPM 集，含系统依赖） | RHEL 9 系（CentOS Stream 9 / Rocky 9 / AlmaLinux 9），x86_64 |
+| `docker-ubuntu-2204-v1` | Docker 引擎离线包（自足 deb 集，含系统依赖） | Ubuntu 22.04 LTS，x86_64 |
 | `compose-v5.1.3` | Docker Compose 独立静态二进制 | linux x86_64 |
 | `images-el7-v1` | 常用容器镜像 tar（预留给无外网机器） | linux x86_64 |
 
