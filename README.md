@@ -1,52 +1,50 @@
 # Deploy Artifacts
 
-受限网络环境下部署所需的**二进制产物镜像**（Docker 引擎离线包、Compose 二进制、常用镜像 tar 等）。
+Binary artifacts needed to deploy in restricted-network environments (offline Docker Engine bundles, the Compose binary, common container image tarballs, etc.).
 
-Git 仓库不适合存放几十上百 MB 的二进制文件（单文件 100 MiB 硬限制），所以这些产物统一以
-**Release 资产**的形式发布，按「组件 + 平台」打 tag，便于脚本按需下载。
+Git repositories are a poor place for binaries of tens or hundreds of megabytes (100 MiB per-file hard limit), so all artifacts are published as **release assets**, tagged by component + platform, so installer scripts can fetch exactly what they need.
 
-## 为什么需要这个仓库
+## Why this repository exists
 
-很多生产机器（尤其境外或内网隔离环境）无法访问 Docker Hub、GitHub 直连或系统软件源，
-但安装过程又需要这些大文件。把产物放在公开 Release 里，安装脚本就能：
+Many production hosts (especially overseas or air-gapped ones) cannot reach Docker Hub, GitHub directly, or the OS package repositories, yet the installation needs those large files. Publishing them as public release assets lets the installer:
 
-- 有外网时按需拉取，无需人工拷贝；
-- 校验 sha256 后再使用，避免拿到被替换或损坏的文件；
-- 下载失败时回退到其它来源（在线安装或本地离线包）。
+- fetch them on demand when the host has internet access, with no manual copying;
+- verify sha256 before use, so a replaced or corrupted file is never installed;
+- fall back to other sources (online install or a local offline bundle) when the download fails.
 
-## 内容一览
+## Contents
 
-| Tag | 内容 | 适用平台 |
+| Tag | Contents | Platforms |
 |---|---|---|
-| `docker-el7-v2` | Docker 引擎离线包（自足 RPM 集，含系统依赖） | CentOS 7 / RHEL 7，x86_64 |
-| `docker-el9-v2` | Docker 引擎离线包（差分 RPM 闭包：只带 Docker 组件及其缺的包） | RHEL 9 系（Rocky 9 / AlmaLinux 9 / RHEL 9 / CentOS Stream 9），x86_64 |
-| `docker-ubuntu-2204-v1` | Docker 引擎离线包（自足 deb 集，含系统依赖） | Ubuntu 22.04 LTS，x86_64 |
-| `docker-ubuntu-2404-v1` | Docker 引擎离线包（自足 deb 集，含系统依赖） | Ubuntu 24.04 LTS，x86_64 |
-| `compose-v5.1.3` | Docker Compose 独立静态二进制 | linux x86_64 |
-| `images-el7-v1` | 常用容器镜像 tar（mysql / nginx / openresty / temurin-8-jre / coturn / redis，每个镜像单独一个文件） | linux amd64（与发行版无关） |
+| `docker-el7-v2` | Docker Engine offline bundle (self-contained RPM set, system dependencies included) | CentOS 7 / RHEL 7, x86_64 |
+| `docker-el9-v2` | Docker Engine offline bundle (differential RPM closure: only Docker components plus the packages they are missing) | RHEL 9 family (Rocky 9 / AlmaLinux 9 / RHEL 9 / CentOS Stream 9), x86_64 |
+| `docker-ubuntu-2204-v1` | Docker Engine offline bundle (self-contained deb set, system dependencies included) | Ubuntu 22.04 LTS, x86_64 |
+| `docker-ubuntu-2404-v1` | Docker Engine offline bundle (self-contained deb set, system dependencies included) | Ubuntu 24.04 LTS, x86_64 |
+| `compose-v5.1.3` | Docker Compose standalone static binary | linux x86_64 |
+| `images-el7-v1` | Common container image tarballs (mysql / nginx / openresty / temurin-8-jre / coturn / redis, one file per image) | linux amd64 (distribution independent) |
 
-每个 Release 的说明里写明用途、sha256 与使用方式。
+Each release note states the purpose, the sha256, and how to use the asset.
 
-说明：`docker-el9-v1`（旧）是 CentOS Stream 9 上打的**全闭包**，含 systemd/glibc 等基础包，装到 Rocky/Alma/RHEL 9.4 会被 dnf 以「替换受保护包」拒绝，**请改用 `docker-el9-v2`**。
+Note: `docker-el9-v1` (older) is a **full closure** built on CentOS Stream 9 that includes base packages such as systemd and glibc; installing it on Rocky / Alma / RHEL 9.4 is rejected by dnf as replacing protected packages. **Use `docker-el9-v2` instead.**
 
-说明：`images-*` 里的 tar 是 `docker save` 产物，与宿主发行版无关，任何 amd64 Linux 上的 Docker 都可 `docker load -i <文件名>`；文件名是固定契约（安装脚本按名字找文件），不要改名。
+Note: the tarballs under `images-*` are `docker save` output and are independent of the host distribution; any amd64 Linux Docker can run `docker load -i <file>`. The file names are a fixed contract (the installer looks them up by name) - do not rename them.
 
-## 下载
+## Download
 
-直连模板：
+Direct URL template:
 
 ```text
 https://github.com/djsaleqwn/deploy-artifacts/releases/download/<tag>/<asset>
 ```
 
-境内网络直连 GitHub 下载大文件常常很慢甚至 0 字节，可以给地址加公开代理前缀（二选一）：
+Direct downloads of large files from GitHub are often slow or return zero bytes on some networks; a public proxy prefix can be used instead (either one):
 
 ```text
 https://ghfast.top/https://github.com/djsaleqwn/deploy-artifacts/releases/download/<tag>/<asset>
 https://gh-proxy.com/https://github.com/djsaleqwn/deploy-artifacts/releases/download/<tag>/<asset>
 ```
 
-示例（把结果校验后再解包）：
+Example (verify the result before unpacking):
 
 ```bash
 url=https://github.com/djsaleqwn/deploy-artifacts/releases/download/compose-v5.1.3/docker-compose-linux-x86_64-5.1.3
@@ -55,23 +53,23 @@ sha256sum /tmp/docker-compose
 chmod +x /tmp/docker-compose
 ```
 
-## 命名规则
+## Naming rules
 
-- **Tag**：`<组件>-<平台>-v<序号>`，例如 `docker-el7-v2`、`compose-v5.1.3`、`images-el7-v1`。
-- **资产文件名**：保持使用方期望的原名（例如 `docker-offline.tar.gz`），不要改，否则脚本认不出来。
-- 更新产物时**发新 tag**，不要覆盖旧 tag 的资产——已经部署的机器可能依赖旧版本。
+- **Tag**: `<component>-<platform>-v<number>`, e.g. `docker-el7-v2`, `compose-v5.1.3`, `images-el7-v1`.
+- **Asset file name**: keep the original name expected by the consumer (e.g. `docker-offline.tar.gz`) - do not rename it, or the installer will not find it.
+- When publishing updated artifacts, **create a new tag**; never overwrite assets on an existing tag - hosts already deployed may depend on the old version.
 
-## 校验
+## Verification
 
-每个资产的正确 sha256 同时写在对应 Release 说明里。下载后请先校验再使用：
+The correct sha256 of every asset is also written in its release note. Verify before use:
 
 ```bash
 sha256sum <file>   # macOS: shasum -a 256 <file>
 ```
 
-## 许可与免责
+## License and disclaimer
 
-本仓库只做产物分发。每个产物仍归其上游项目所有，并沿用上游许可（例如 Docker Engine 为
-Apache-2.0）。不提供任何担保，请自行确认与目标环境的兼容性。
+This repository only distributes artifacts. Every artifact remains the property of its upstream project and keeps its upstream license (for example Docker Engine is Apache-2.0). No warranty is provided; confirm compatibility with your target environment yourself.
 
-本仓库**不包含**任何源码、业务程序、密钥、凭据或客户信息。
+This repository contains **no** source code, business applications, keys, credentials, or customer data.
+
